@@ -99,3 +99,23 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# ---------------------------------------------------------------------------
+# Local additions (RR Lyrae fork)
+# ---------------------------------------------------------------------------
+# candidates/ is 1.13 GB of rendered light-curve PNGs, regenerable by
+# rrlmbft/scripts/plot_candidates.py from catalogs/dp2_hq_class.  Committing
+# them would put a permanent 1.13 GB in the history, past the ~1 GB repository
+# size GitHub asks you to stay under, and git history cannot be trimmed later
+# without a rewrite for everyone who cloned.
+/candidates/*.png
+
+# candidates/candidates.csv and candidates/scores.csv are deliberately NOT
+# ignored.  The manifest maps a filename back to a position and a score, and
+# scores.csv is hand-entered ratings -- the one thing in the folder that no
+# script can reproduce.
+
+# training_set/ has no rule on purpose: 12 MB for 100 images is small enough to
+# commit as-is, and loose PNGs render in the GitHub UI and can be linked one at
+# a time, which is the point of a practice set.  Rebuild it with
+# rrlmbft/scripts/build_lensrater_training_set.py --seed <n>.

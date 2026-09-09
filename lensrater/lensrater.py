@@ -56,6 +56,7 @@ class LensRater(QMainWindow, mainwindow.Ui_MainWindow):
             sys.exit(0)
         self.image_index = 0
         self.current_image = None
+        self.source_image = None
         self.progress_bar.setMaximum(len(self.image_files))
         self.scorefile = self.image_dir + "/scores.csv"
         self.scores = defaultdict(lambda: -1)
@@ -178,15 +179,25 @@ class LensRater(QMainWindow, mainwindow.Ui_MainWindow):
             self.radios[i].setChecked(i == score)
 
     def resizeEvent(self, event):
-        self.goto_image(self.image_index)
+        super(LensRater, self).resizeEvent(event)
+        # image_label is only resized once the layout runs, which is after
+        # this event, so rescale on the next pass instead of with stale sizes.
+        QtCore.QTimer.singleShot(0, self.rescale_image)
 
     def set_display_image(self, impath):
-        min_dim = min(self.image_label.width(), self.image_label.height())
-        image_profile = QtGui.QImage(self.image_dir + "/" + impath)
-        image_profile = image_profile.scaled(min_dim, min_dim, \
+        self.source_image = QtGui.QImage(self.image_dir + "/" + impath)
+        self.rescale_image()
+
+    def rescale_image(self):
+        if self.source_image is None or self.source_image.isNull():
+            self.image_label.setPixmap(QtGui.QPixmap())
+            return
+        area = self.image_label.contentsRect()
+        if area.width() < 1 or area.height() < 1:
+            return
+        image_profile = self.source_image.scaled(area.width(), area.height(), \
                     aspectRatioMode=QtCore.Qt.KeepAspectRatio, \
                     transformMode=QtCore.Qt.SmoothTransformation)
-        # self.image_label.setScaledContents(True)
         self.image_label.setPixmap(QtGui.QPixmap.fromImage(image_profile))
 
     def up_score(self):
