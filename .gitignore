@@ -108,7 +108,7 @@ ENV/
 # them would put a permanent 1.13 GB in the history, past the ~1 GB repository
 # size GitHub asks you to stay under, and git history cannot be trimmed later
 # without a rewrite for everyone who cloned.
-/candidates/*.png
+/candidates/*
 
 # candidates/candidates.csv and candidates/scores.csv are deliberately NOT
 # ignored.  The manifest maps a filename back to a position and a score, and
