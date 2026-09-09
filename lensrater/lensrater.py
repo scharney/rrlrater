@@ -123,9 +123,9 @@ class LensRater(QMainWindow, mainwindow.Ui_MainWindow):
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Escape:
             self.close()
-        elif e.key() == QtCore.Qt.Key_Right or e.key() == QtCore.Qt.Key_J:
+        elif e.key() == QtCore.Qt.Key_Right or e.key() == QtCore.Qt.Key_K:
             self.nextImage()
-        elif e.key() == QtCore.Qt.Key_Left or e.key() == QtCore.Qt.Key_K:
+        elif e.key() == QtCore.Qt.Key_Left or e.key() == QtCore.Qt.Key_J:
             self.prevImage()
         elif e.key() == QtCore.Qt.Key_End:
             self.goto_image(len(self.image_files) - 1)
