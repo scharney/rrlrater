@@ -115,6 +115,15 @@ ENV/
 # scores.csv is hand-entered ratings -- the one thing in the folder that no
 # script can reproduce.
 
+# Personal and set-aside rating files.  `scores.csv` itself is committed --
+# it has to be, because it carries the is_rrl answer key and lensrater only
+# writes three columns when it creates the file itself, so a clone without it
+# cannot be graded.  What must not be committed is one rater's answers: a
+# `scores.csv` full of the set-builder's own scores arrives half-answered.
+# `--reset-scores` moves those to scores.<username>.csv, which this catches.
+# The single-dot `scores.csv` does not match this two-dot pattern.
+scores.*.csv
+
 # training_set/ has no rule on purpose: 12 MB for 100 images is small enough to
 # commit as-is, and loose PNGs render in the GitHub UI and can be linked one at
 # a time, which is the point of a practice set.  Rebuild it with

@@ -60,6 +60,12 @@ class LensRater(QMainWindow, mainwindow.Ui_MainWindow):
         self.progress_bar.setMaximum(len(self.image_files))
         self.scorefile = self.image_dir + "/scores.csv"
         self.scores = defaultdict(lambda: -1)
+        # Columns in scores.csv past `score` belong to whoever wrote the file,
+        # not to us.  They are read here and written back untouched, so a
+        # pre-seeded answer key survives a rating session -- save() rewrites
+        # the whole file, so anything not carried is anything lost.
+        self.extra_header = []
+        self.extra = {}
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
         QtWidgets.qApp.installEventFilter(self)
 
@@ -226,12 +232,21 @@ class LensRater(QMainWindow, mainwindow.Ui_MainWindow):
         self.colour_label.setText(LensRater.categories[score])
 
     def load(self):
-        if os.path.isfile(self.scorefile):
-            with open(self.scorefile, "r") as f:
-                lines = [s.split(",") for s in f.readlines()]
-            self.username = lines[1][0]
-            for line in lines[1:]:
-                self.scores[line[1]] = int(line[2])
+        if not os.path.isfile(self.scorefile):
+            return
+        with open(self.scorefile, "r") as f:
+            rows = [s.rstrip("\n").split(",") for s in f.readlines() if s.strip()]
+        if len(rows) < 2:
+            return
+        self.extra_header = [h.strip() for h in rows[0][3:]]
+        for row in rows[1:]:
+            self.scores[row[1]] = int(row[2])
+            if self.extra_header:
+                self.extra[row[1]] = row[3:]
+        # A seeded file carries no rater yet.  Adopting its empty username
+        # would blank the field instead of leaving the $USER default.
+        if rows[1][0].strip():
+            self.username = rows[1][0].strip()
 
     def jumped_to(self):
         # self.jump_box.setEnabled(False)
@@ -262,10 +277,13 @@ class LensRater(QMainWindow, mainwindow.Ui_MainWindow):
 
     def save(self):
         with open(self.scorefile, "w") as f:
-            f.write("username,image,score\n")
+            f.write(",".join(["username", "image", "score"]
+                             + self.extra_header) + "\n")
             for file_ in self.image_files:
-                f.write("%s,%s,%d\n" % (self.username, file_.split("/")[-1],\
-                        self.scores[file_]))
+                name = file_.split("/")[-1]
+                row = [self.username, name, "%d" % self.scores[file_]]
+                row += self.extra.get(name, [""] * len(self.extra_header))
+                f.write(",".join(row) + "\n")
 
     def quit(self):
         sys.exit(0)
